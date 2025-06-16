@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>World Clock Time Zones</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+
+    .clock-header {
+      background-color: #000;
+      color: yellow;
+      font-size: 2em;
+      text-align: center;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .search-container {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-container input {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+    }
+
+    .search-container button {
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+      cursor: pointer;
+    }
+
+    .search-container button:hover {
+      background-color: #2980b9;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: white;
+    }
+
+    tbody tr:hover {
+      background-color: #f1f1f1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="clock-header" id="localClock">Loading time...</div>
+
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Search time zone (e.g., Asia/Kolkata)" />
+    <button onclick="filterTimeZones()">Search</button>
+  </div>
+
+  <table id="timezoneTable">
+    <thead>
+      <tr>
+        <th>Time Zone</th>
+        <th>Current Time</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <script>
+    const tableBody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('searchInput');
+    const localClock = document.getElementById('localClock');
+    let allTimeZones = [];
+
+    function updateLocalClock() {
+      const now = new Date();
+      localClock.textContent = "Local Time: " + now.toLocaleTimeString();
+    }
+
+    function getTimeInZone(timeZone) {
+      return new Date().toLocaleTimeString('en-US', {
+        timeZone,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      }).toUpperCase();
+    }
+
+    function loadTimeZones() {
+      allTimeZones = Intl.supportedValuesOf('timeZone');
+      renderTable(allTimeZones);
+    }
+
+    function renderTable(zones) {
+      tableBody.innerHTML = "";
+      zones.forEach(zone => {
+        const row = document.createElement("tr");
+        const time = getTimeInZone(zone);
+        row.innerHTML = `<td>${zone}</td><td>${time}</td>`;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function refreshTimes() {
+      const rows = tableBody.querySelectorAll("tr");
+      rows.forEach((row, i) => {
+        const time = getTimeInZone(allTimeZones[i]);
+        row.cells[1].textContent = time;
+      });
+    }
+
+    function filterTimeZones() {
+      const query = searchInput.value.toLowerCase();
+      const filtered = allTimeZones.filter(zone => zone.toLowerCase().includes(query));
+      renderTable(filtered);
+    }
+
+    // Initial Load
+    loadTimeZones();
+    updateLocalClock();
+    setInterval(updateLocalClock, 1000);
+    setInterval(refreshTimes, 1000);
+  </script>
+</body>
+</html>
